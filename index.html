@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="./src/img/cell_gift.png">
+  <title>圣诞快乐~</title>
+  <!--
+    ! bootstrap
+  -->
+  <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/css/bootstrap.min.css">
+  <script src="https://cdn.staticfile.org/popper.js/2.9.3/umd/popper.min.js"></script>
+  <script src="https://cdn.staticfile.org/twitter-bootstrap/5.1.1/js/bootstrap.min.js"></script>
+  <!--
+    ! vuejs
+  -->
+  <script src="https://cdn.staticfile.org/vue/3.0.5/vue.global.js"></script>
+  <!--
+    ! tools
+  -->
+  <script src="https://cdn.bootcdn.net/ajax/libs/js-cookie/latest/js.cookie.min.js"></script>
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<body>
+  <div id="root" class="container">
+    <div id="app">
+      <div id="sb-mute">
+        <div>
+          <p>你好啊，节日快乐!<br>来自夏至的祝福</p>
+          <button class="btn btn-light" @click="sbMute">确定</button>
+        </div>
+      </div>
+      <div id="countdown">
+        <p id="countdown-tip" class="my-2 display-2 text-center" @click="clearCookie">
+          今天是<span v-if="!isDay">平安夜</span>
+          <span v-if="isDay">圣诞节</span>
+        </p>
+        <div v-if="!isDay" id="countdown-time" class="shadow">
+          <p>圣诞节倒计时</p>
+          <div class="d-flex justify-content-around align-items-center">
+            <span>{{ conuntdown_time[0] }}</span>
+            <span>{{ conuntdown_time[1] }}</span>
+            <span>:</span>
+            <span>{{ conuntdown_time[2] }}</span>
+            <span>{{ conuntdown_time[3] }}</span>
+            <span>:</span>
+            <span>{{ conuntdown_time[4] }}</span>
+            <span>{{ conuntdown_time[5] }}</span>
+          </div>
+        </div>
+        <div v-if="isDay" id="blessing" class="shadow">
+          <p>{{ name }}</p>
+        </div>
+      </div>
+      <div id="content">
+        <div style="position: relative;">
+          <div id="content-tree" @click="go">
+            <img src="./src/img/cell_bell.png">
+            <img src="./src/img/cell_bell.png">
+            <img src="./src/img/cell_tree.png">
+            <img src="./src/img/cell_gift.png">
+            <img src="./src/img/cell_cane.png">
+            <img id="content-tree-socks" src="./src/img/socks.png">
+            <img id="content-tree-socks-1" src="./src/img/socks.png">
+          </div>
+          <p v-if="!isSet" id="content-tree-put">点击圣诞树放置袜子</p>
+          <p v-if="isSet" id="content-tree-get">点击圣诞树查看袜子</p>
+        </div>
+      </div>
+      <div id="cover" :class="{'transparent' : !showAbout}"></div>
+      <div id="about" class="">
+        <div id="about-bg"></div>
+        <div id="about-tip">
+          向<span v-show="!showAbout">上</span>
+          <span v-show="showAbout">下</span>滑动
+        </div>
+        <div id="about-music">
+          <div class="row music-row">
+            <div class="col music-col" :class="[selectMC == 0 ? 'music-select' : '']" @click="selectM(0)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 0 ? 'text-light' : '']">C调</p>
+            </div>
+            <div class="col music-col" :class="[selectMC == 1 ? 'music-select' : '']" @click="selectM(1)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 1 ? 'text-light' : '']">#C调</p>
+            </div>
+            <div class="col music-col" :class="[selectMC == 2 ? 'music-select' : '']" @click="selectM(2)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 2 ? 'text-light' : '']">D调</p>
+            </div>
+          </div>
+          <div class="row music-row">
+            <div class="col music-col" :class="[selectMC == 3 ? 'music-select' : '']" @click="selectM(3)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 3 ? 'text-light' : '']">#D调</p>
+            </div>
+            <div class="col music-col" :class="[selectMC == 4 ? 'music-select' : '']" @click="selectM(4)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 4 ? 'text-light' : '']">E调</p>
+            </div>
+            <div class="col music-col" :class="[selectMC == 5 ? 'music-select' : '']" @click="selectM(5)">
+              <img src="./src/img/cell_bell.png">
+              <p :class="[selectMC == 5 ? 'text-light' : '']">F调</p>
+            </div>
+          </div>
+        </div>
+        <div id="set-snow">
+          <input id="set-snow-range" type="range" class="form-range" step="1" min="0" max="100" v-model="snowQuantity">
+          <p style="text-align:center;">设置雪的大小</p>
+        </div>
+        <div id="other">
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#my-about">关于<br>About</button><br>
+          <button class="btn" data-bs-toggle="modal" data-bs-target="#my-copyright">版权<br>Copyright</button>
+        </div>
+      </div>
+      <!-- <audio id="music-obj" autoplay loop>
+        <source :src="selectMS" type="audio/mpeg">
+      </audio> -->
+
+      <!-- 设置名字 -->
+      <div class="modal fade" id="socks-setname">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <!-- 模态标题 -->
+            <div class="modal-header">
+              <h4 class="modal-title">请先进行填写</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- 模态主体 -->
+            <div class="modal-body">
+              <label>请输入你的真实姓名<br>
+                只有一次机会哦<br>
+                错误的名字会影响圣诞老人派送祝福滴</label>
+              <input id="socks-input-name" class="form-control">
+            </div>
+            <!-- 模态页脚 -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+              <button type="button" class="btn btn-success" @click="setName">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 设置袜子 -->
+      <div class="modal fade" id="socks-setsocks">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <!-- 模态标题 -->
+            <div class="modal-header">
+              <h4 class="modal-title">{{ name }}</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- 模态主体 -->
+            <div class="modal-body">
+              <label>请输入你的愿望<br>
+                过了平安夜就不能修改愿望咯<br>
+                圣诞节当天可以在这里查看圣诞老人的回复哦<br>( •̀ ω •́ )✧</label>
+              <textarea id="socks-wish" class="form-control" rows="3" maxlength="300"
+                v-model="socks.wish"></textarea>
+            </div>
+            <!-- 模态页脚 -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+              <button type="button" class="btn btn-success" @click="setWish">保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 查看袜子 -->
+      <div class="modal fade" id="socks-seesocks">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <!-- 模态标题 -->
+            <div class="modal-header">
+              <h4 class="modal-title">{{ name }}</h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <!-- 模态主体 -->
+            <div class="modal-body">
+              <label>你的愿望</label>
+              <div class="alert-success p-2">{{ socks.wish }}</div>
+              <label>圣诞老人的回复</label>
+              <div id="socks-text" class="alert-warning p-4">正在获取呢...</div>
+              <!-- <div class="alert-warning p-4" v-show="socks.code" v-html="socks.res"></div>
+              <div class="alert-warning p-4" v-show="!socks.code">圣诞老人正忙着派送祝福呢<br>也有可能卡在烟囱了</div> -->
+            </div>
+            <!-- 模态页脚 -->
+            <div class="modal-footer">
+              <button type="button" class="btn btn-success" data-bs-dismiss="modal">收到</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 关于 -->
+    <div class="modal fade" id="my-about">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <!-- 模态标题 -->
+          <div class="modal-header">
+            <h4 class="modal-title">关于 About</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <!-- 模态主体 -->
+          <div class="modal-body">
+            圣诞如果是晴天<br>
+            那我用阳光编织幸福送你<br>
+            如果它是雨天<br>
+            那我用雨水凝聚祝福送你<br>
+            如果它是阴天<br>
+            那我把云揉成棉花糖送你<br>
+            如果它是雪天<br>
+            那太好了 揉个大雪球砸你<br>
+            <br><br>
+            小小的作品与小小的祝福<br>
+            <!-- 已经没有太多的话语来表达<br> -->
+            <!-- 感冒好难受啊 -->
+            希望你会喜欢<br>
+          </div>
+          <!-- 模态页脚 -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 版权 -->
+    <div class="modal fade" id="my-copyright">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <!-- 模态标题 -->
+          <div class="modal-header">
+            <h4 class="modal-title">版权 Copyright</h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <!-- 模态主体 -->
+          <div class="modal-body">
+            前端框架 ------ Vue.js<br>
+            前端UI库 ------ Bootstrap 5<br>
+            前端工具 ------ jQuery<br>
+            后端框架 ------ Node.js Koa<br>
+            图片素材 ------ 谷歌、百度、图精灵 等<br>
+            雪花效果 ------ 夏至<br>
+            倒计时效果 ---- 夏至<br>
+            吉他 ----------- 夏至<br>
+            创意 ----------- 夏至<br>
+            文案 ----------- 百度<br>
+            <br><br>
+            <p style="text-align: center;">图片等素材如有侵权，请联系作者删除！<br>2601721443@qq.com</p>
+            <p style="text-align: center;">©2022 XAZH. All Rights Reserved.</p>
+          </div>
+          <!-- 模态页脚 -->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <canvas id="show-snow"></canvas>
+    <div id="loading">
+      <div class="spinner-border text-success"></div>
+    </div>
+  </div>
+</body>
+
+<script type="module">
+  import snow from './src/js/snow.js'
+
+  const m = {}
+  const api = 'http://api.christmas.wwgm.top/'
+
+  const App = {
+    data() {
+      return {
+        message: "Christmas",
+        isDay: false,
+        conuntdown_time: [0, 0, 0, 0, 0, 0],
+        showAbout: false,
+        name: '夏至',
+        isSet: false,
+        socks: {
+          name: '',
+          wish: '',
+          code: '0',
+          res: ''
+        },
+        selectMC: 4,
+        musicObj: null,
+        snowQuantity: 66,
+      }
+    },
+    methods: {
+      ask: function (url, data, backcall = () => { }, obackcall = () => { }) {
+        let http = new XMLHttpRequest()
+        http.timeout = 5000
+        http.ontimeout = function () {
+          obackcall()
+        }
+        http.onreadystatechange = function (e) {
+          if (http.readyState == 4 && http.status == 200)
+            backcall(JSON.parse(http.responseText))
+          else if (http.status >= 300)
+            obackcall(e)
+        }
+        http.open('POST', url, true)
+        http.setRequestHeader("Content-type", "application/json")
+        http.send(JSON.stringify(data))
+      },
+      setName: function () {
+        let name = $('#socks-input-name').val()
+        let reg = /^[\u4e00-\u9fa5]{1,4}$/
+        if (reg.test(name)) {
+          this.name = name
+          this.socks.name = name
+          console.log(this.name)
+          Cookies.set('name', name)
+          $('#socks-setname').modal('hide')
+        } else {
+          alert('请输入汉字姓名')
+        }
+      },
+      setWish: function () {
+        if (!this.socks.wish) {
+          Cookies.remove('wish')
+          this.isSet = false
+          alert('愿望不能为空哦')
+          return
+        }
+        let wish = Cookies.get('wish')
+        if (wish != this.socks.wish || Cookies.get('setok') != 'true') {
+          Cookies.set('wish', this.socks.wish)
+          Cookies.set('setok', 'false')
+          $('#loading').show()
+          this.ask(api + 'set', this.socks, (m) => {
+            // console.log(m)
+            $('#loading').hide()
+            $('#socks-setsocks').modal('hide')
+            Cookies.set('setok', 'true')
+            this.anmiSocks()
+          }, () => {
+            $('#loading').hide()
+            Cookies.remove('wish')
+            alert('放置袜子失败了呢ಥ_ಥ')
+            $('#socks-setsocks').modal('hide')
+          })
+        } else {
+          $('#socks-setsocks').modal('hide')
+        }
+        this.isSet = true
+      },
+      anmiSocks: function () {
+        document.getElementById('content-tree-socks-1').style.display = 'block'
+        document.getElementById('content-tree-socks').style.opacity = 0
+        setTimeout(() => {
+          document.getElementById('content-tree-socks-1').style.display = 'none'
+          document.getElementById('content-tree-socks').style.opacity = 1
+        }, 5000)
+      },
+      set: function () {
+        if (!this.name) {
+          $('#socks-setname').modal('show')
+        } else {
+          $('#socks-setsocks').modal('show')
+        }
+      },
+      get: function () {
+        if (!this.socks.wish) {
+          alert('很抱歉，你并没有放置袜子，所以不能收到圣诞老人的回应\n\n但是圣诞老人会祝福你节日快乐！ヾ(≧▽≦*)o')
+          return
+        }
+        let _this = this
+        $('#socks-seesocks').modal('show')
+        this.ask(api + 'get', this.socks, (m) => {
+          this.socks.code = m.code
+          this.socks.res = m.res
+          $('#socks-text').empty()
+          if (m.code)
+            $('#socks-text').append(m.res)
+          else
+            $('#socks-text').append('圣诞老人正忙着派送祝福呢<br>也有可能卡在烟囱了')
+        }, () => {
+          alert('抱歉哈，无法收到圣诞老人的回应呢\n＞﹏＜')
+        })
+      },
+      go: function () {
+        if (!this.isDay)
+          this.set()
+        else
+          this.get()
+      },
+      selectM: function (num) {
+        if (num == this.selectMC) {
+          this.selectMC = -1
+          this.musicObj.pause()
+          return
+        }
+        this.selectMC = num
+        switch (num) {
+          case 0:
+            this.musicObj.src = './src/au/C.mp3'
+            break
+          case 1:
+            this.musicObj.src = './src/au/3C.mp3'
+            break
+          case 2:
+            this.musicObj.src = './src/au/D.mp3'
+            break
+          case 3:
+            this.musicObj.src = './src/au/3D.mp3'
+            break
+          case 4:
+            this.musicObj.src = './src/au/E.mp3'
+            break
+          case 5:
+            this.musicObj.src = './src/au/F.mp3'
+            break
+        }
+        this.musicObj.load()
+        this.musicObj.play()
+      },
+      sbMute: function () {
+        document.getElementById('sb-mute').style.display = 'none'
+        this.musicObj.load()
+        this.musicObj.play()
+      },
+      clearCookie: function () {
+        let r = confirm('确定清除Cookie?\n此操作会清除姓名\n但依然可以通过原姓名找到自己的袜子')
+        if (r) {
+          Cookies.remove('name')
+          Cookies.remove('wish')
+          Cookies.remove('setok')
+          location.reload()
+        }
+      }
+    },
+    mounted() {
+      this.musicObj = new Audio('./src/au/E.mp3')
+      this.musicObj.autoplay = true
+      this.musicObj.loop = true
+      // this.musicObj.play()
+
+      // 倒计时
+      !(function (_this) {
+        let md = new Date('2022/12/25 00:00:00')
+        // let md = new Date('2022/12/23 19:19:00')
+        let ct = setInterval(() => {
+          let nd = new Date()
+          let cs = (md - nd) / 1000
+          if (cs <= 0) {
+            _this.isDay = true
+            clearInterval(ct)
+          }
+          let h = parseInt(cs / 3600)
+          let m = parseInt(cs % 3600 / 60)
+          let s = parseInt(cs % 3600 % 60)
+          _this.conuntdown_time[0] = parseInt(h / 10)
+          _this.conuntdown_time[1] = parseInt(h % 10)
+          _this.conuntdown_time[2] = parseInt(m / 10)
+          _this.conuntdown_time[3] = parseInt(m % 10)
+          _this.conuntdown_time[4] = parseInt(s / 10)
+          _this.conuntdown_time[5] = parseInt(s % 10)
+        }, 1000)
+      }(this))
+
+      // 关于面板展示监听
+      !(function (_this) {
+        let y
+        window.addEventListener('touchstart', (e) => {
+          y = e.touches[0].clientY
+        })
+        window.addEventListener('touchend', (e) => {
+          let newy = e.changedTouches[0].clientY - y
+          if (newy > 100)
+            _this.showAbout = false
+          else if (newy < -100)
+            _this.showAbout = true
+        })
+      }(this))
+
+      // 获取信息
+      !(function (_this) {
+        let name = Cookies.get('name')
+        _this.name = name ? name : ''
+        _this.socks.name = _this.name
+        let wish = Cookies.get('wish')
+        _this.socks.wish = wish ? wish : ''
+        if (wish)
+          _this.isSet = true
+      }(this))
+
+      // 绘制雪花
+      snow.init(document.getElementById('show-snow'), this.snowQuantity).start()
+    },
+    watch: {
+      showAbout: function (v) {
+        document.getElementById('about').style.bottom = v ? '0' : '-600px'
+      },
+      snowQuantity: function (v) {
+        snow.set(v)
+      }
+    }
+  }
+
+  Vue.createApp(App).mount('#app')
+</script>
+
+<style>
+  @font-face {
+    font-family: YZ;
+    src: url(./src/font/yezigongchangguojiangti.woff);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    font-family: 'YZ';
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    max-width: 480px;
+    min-height: 680px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  body {
+    background-image: url(./src/img/bg1.jpg);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+  }
+
+  #loading {
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    position: fixed;
+    background-color: #00000099;
+    z-index: 99999999;
+    display: none;
+  }
+
+  #loading>div {
+    position: absolute;
+    top: calc(50% - 33px);
+    left: calc(50% - 33px);
+    font-size: 33px;
+    width: 66px;
+    height: 66px;
+  }
+
+  #sb-mute {
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    position: fixed;
+    background-color: #00000099;
+    z-index: 99999999;
+  }
+
+  #sb-mute>div {
+    position: relative;
+    top: 50%;
+    left: calc(50% - 100px);
+    width: 200px;
+    height: 80px;
+    background-color: white;
+    border-radius: 12px;
+  }
+
+  #sb-mute>div>p {
+    text-align: center;
+    margin: 0;
+    font-size: 20px;
+  }
+
+  #sb-mute>div>button {
+    width: 100%;
+    border-radius: 12px;
+    user-select: none;
+    outline: none;
+    font-size: 20px;
+  }
+
+  #root,
+  #app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  #show-snow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: none;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+    /* background-color: red; */
+  }
+
+  #cover {
+    width: 200vw;
+    height: 200vh;
+    position: absolute;
+    top: -50vh;
+    left: -50vw;
+    background-color: #00000022;
+    transition: all .2s ease-in-out;
+    pointer-events: none;
+  }
+
+  .transparent {
+    background-color: transparent !important;
+  }
+
+  #countdown-tip {
+    font-weight: 600;
+    text-shadow: 0 2px 2px pink;
+    color: #f36b54;
+    opacity: .9;
+  }
+
+  #countdown-time {
+    margin: 0 auto;
+    width: 80%;
+    height: 100px;
+    background-color: #c7645411;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+  }
+
+  #blessing {
+    margin-left: calc(50% - 190px);
+    width: 380px;
+    height: 140px;
+    background-image: url(./src/img/blessing.png);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 32px;
+    position: relative;
+  }
+
+  #blessing>p {
+    position: absolute;
+    top: 82px;
+    left: 240px;
+    transform: rotate(-8deg);
+    /* color: #ffd38c; */
+    color: #ffedd3;
+    text-shadow: 0 -1px 4px #5e5e5e;
+    font-size: 16px;
+    line-height: 0;
+  }
+
+  #countdown-time>p {
+    margin: 0;
+    padding-top: 12px;
+    line-height: 16px;
+    text-align: center;
+    color: #efefef;
+  }
+
+  #countdown-time div>span {
+    /* color: #ffedd3; */
+    color: #1b654e;
+    font-size: 48px;
+    font-weight: 900;
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #content {
+    width: 100%;
+    height: calc(100% - 220px);
+    /* background-color: blue; */
+  }
+
+  #content-tree {
+    margin: 12px auto;
+    width: 300px;
+    height: 400px;
+    transform: rotate(-12deg);
+    background-image: url(./src/img/tree.png);
+    background-position: center;
+    background-size: cover;
+    /* position: absolute; */
+    bottom: 0;
+    animation: shake 3s ease-in-out infinite;
+  }
+
+  #content-tree>img {
+    animation: reshake 3s ease-in-out infinite;
+    position: absolute;
+    width: 40px;
+  }
+
+  #content-tree>img:nth-child(1) {
+    top: 120px;
+    left: 100px;
+    width: 30px;
+  }
+
+  #content-tree>img:nth-child(2) {
+    top: 260px;
+    left: 220px;
+    width: 30px;
+  }
+
+  #content-tree>img:nth-child(3) {
+    top: 250px;
+    left: 110px;
+    width: 30px;
+  }
+
+  #content-tree>img:nth-child(4) {
+    top: 320px;
+    left: 60px;
+    width: 30px;
+  }
+
+  #content-tree>img:nth-child(5) {
+    top: 160px;
+    left: 160px;
+    width: 20px;
+  }
+
+  #content-tree>img:nth-child(6) {
+    top: 250px;
+    left: 150px;
+    width: 100px;
+  }
+
+  #content-tree>img:nth-child(7) {
+    top: 250px;
+    left: 150px;
+    width: 100px;
+    display: none;
+    animation: shrink 5s;
+  }
+
+  #content-tree-put,
+  #content-tree-get {
+    position: absolute;
+    text-align: center;
+    width: 100%;
+    top: 340px;
+    color: white;
+    font-size: 32px;
+    text-shadow: 0 0 12px #000000;
+    animation: breathelamp-scale 3s ease-in-out infinite;
+  }
+
+  #about {
+    height: 600px;
+    width: 380px;
+    bottom: -600px;
+    /* bottom: 0; */
+    left: calc(50% - 190px);
+    position: absolute;
+    /* background-color: #3a8dae11; */
+    background-color: #ffffff66;
+    backdrop-filter: blur(12px);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -.5rem 1rem rgba(0, 0, 0, .15);
+    transition: all .2s ease-in-out;
+  }
+
+  #about-bg {
+    width: 100%;
+    height: 200px;
+    position: absolute;
+    top: -175px;
+    background-image: url(./src/img/about_bg.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
+  #about-tip {
+    position: absolute;
+    font-size: 16px;
+    top: -96px;
+    left: -40px;
+    text-align: center;
+    width: 100%;
+    text-align: center;
+    /* color: white; */
+    color: #5e5e5e;
+    text-shadow: 0 1px 4px #555;
+    animation: breathelamp 2s infinite;
+  }
+
+  #about-music {
+    margin: 30px;
+  }
+
+  .music-row {
+    height: 120px;
+    margin-bottom: 20px;
+  }
+
+  /* .music-col {
+    background-color: red;
+    border: 1px solid #fff; 
+  } */
+
+  .music-col>img {
+    height: 100px;
+  }
+
+  .music-col>p {
+    text-align: center;
+  }
+
+  .music-col>img:active {
+    animation: shake .2s ease-in-out 3;
+  }
+
+  .music-select {
+    background-color: #d62837;
+    border-radius: 12px;
+  }
+
+  #set-snow {
+    margin: 60px 30px 30px 30px;
+  }
+
+  #other {
+    margin: 30px;
+  }
+
+  #other>button {
+    width: 100%;
+    border: 1px solid #fff;
+  }
+
+  #other>button:nth-child(1) {
+    border-radius: 12px 12px 0 0;
+  }
+
+  #other>button:nth-child(3) {
+    border-radius: 0 0 12px 12px;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 20px;
+    border-radius: 6px;
+    background-color: #efefef;
+    border: 1px solid #fff;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    height: 30px;
+    width: 30px;
+    border-radius: 12px;
+    margin-top: -10px;
+    background-color: transparent;
+    background-image: url(./src/img/cell_star.png);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  @keyframes breathelamp {
+    0% {
+      opacity: 0
+    }
+
+    50% {
+      opacity: .8
+    }
+
+    100% {
+      opacity: 0
+    }
+  }
+
+  @keyframes breathelamp-scale {
+    0% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    50% {
+      opacity: .8;
+      transform: scale(1);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  @keyframes shake {
+    0% {
+      transform: rotate(-12deg)
+    }
+
+    50% {
+      transform: rotate(12deg);
+    }
+
+    100% {
+      transform: rotate(-12deg);
+    }
+  }
+
+  @keyframes reshake {
+    0% {
+      transform: rotate(12deg)
+    }
+
+    50% {
+      transform: rotate(-12deg);
+    }
+
+    100% {
+      transform: rotate(12deg);
+    }
+  }
+
+  @keyframes shrink {
+    0% {
+      transform: scale(6);
+    }
+
+    100% {
+      transform: scale(1);
+    }
+  }
+</style>
+
+</html>
